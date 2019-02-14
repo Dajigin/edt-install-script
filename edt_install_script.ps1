@@ -24,11 +24,17 @@ If (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 
         (Get-Content ".\install.yml" -Raw) -match "version:\s*(?'ver'\S*)"
         $EdtVer = $Matches['ver']
-
-
+        $EdtVer -match "\d*.(?'secver'\d*)."
+	$SecondaryVer = [convert]::ToInt32($Matches['secver'])
+	$SecondaryVer
+	if ($SecondaryVer -lt 10)
+	{ $FileName = "C:\Program Files\1C\1CE\components\1c-enterprise-development-tools-" + $EdtVer + "-x86_64\1cedt"}
+	else
+	{$FileName = "C:\Program Files\1C\1CE\components\1c-edt-" + $EdtVer + "-x86_64\1cedt"}
+	$FileName
+        
         # Редактируем ini файл согласно рекомендациям для больших конфигураций
 
-        $FileName = "C:\Program Files\1C\1CE\components\1c-enterprise-development-tools-" + $EdtVer + "-x86_64\1cedt"
         $IniFileName = $FileName + ".ini"
         $BakFileName = $FileName + ".bak"
 	$memory = $args[0]
