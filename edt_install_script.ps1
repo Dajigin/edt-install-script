@@ -16,7 +16,7 @@ If (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         "Удаляем установленные версии EDT"
         .\1ce-installer-cli.cmd uninstall --file ".\uninstall.yml"
          "Устанавливаем новую версию из дистрибутива"
-        .\1ce-installer-cli.cmd install all --overwrite
+        .\1ce-installer-cli.cmd install all --overwrite --ignore-hardware-checks
 
         #Определяем новую версию
 
