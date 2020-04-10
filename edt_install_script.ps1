@@ -24,14 +24,22 @@ If (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 
         (Get-Content ".\install.yml" -Raw) -match "version:\s*(?'ver'\S*)"
         $EdtVer = $Matches['ver']
-        $EdtVer -match "\d*.(?'secver'\d*)."
+        $EdtVer -match "(?'primver'\d*).(?'secver'\d*)."
+	$PrimaryVer = [convert]::ToInt32($Matches['primver'])
 	$SecondaryVer = [convert]::ToInt32($Matches['secver'])
+	$PrimaryVer
 	$SecondaryVer
-	if ($SecondaryVer -lt 10)
-	{ $FileName = "C:\Program Files\1C\1CE\components\1c-enterprise-development-tools-" + $EdtVer + "-x86_64\1cedt"}
+	if($PrimaryVer -gt 2019)
+	{$EdtPath = "C:\Program Files\1C\1CE\components\1c-edt-" + $EdtVer + "-x86_64"}
+	elseif ($SecondaryVer -lt 10)
+	{ $EdtPath = "C:\Program Files\1C\1CE\components\1c-enterprise-development-tools-" + $EdtVer + "-x86_64"}
 	else
-	{$FileName = "C:\Program Files\1C\1CE\components\1c-edt-" + $EdtVer + "-x86_64\1cedt"}
-	$FileName
+	{$EdtPath = "C:\Program Files\1C\1CE\components\1c-edt-" + $EdtVer + "-x86_64"}
+	
+	$EdtPathExists = Test-Path $EdtPath
+	if ($exists -eq $true) {Remove-Item $EdtPath}	 
+
+	$FileName = $EdtPath + "\1cedt"
         
         # Редактируем ini файл согласно рекомендациям для больших конфигураций
 
@@ -39,9 +47,10 @@ If (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         $BakFileName = $FileName + ".bak"
 	$memory = $args[0]
 	$tmpdir = $args[1]
+	$javapath = $args[2]
 	If($memory -eq $null)
 	{
-		$memory="8g"
+		$memory="12g"
 	}	
 
 	If($tmpdir -eq $null)
@@ -50,7 +59,14 @@ If (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 	}	
 	$MemoryString = "-Xmx"+$memory
         Rename-Item -Path $IniFileName -NewName $BakFileName
-        Get-Content $BakFileName | ForEach-Object {$_ -replace "-Xmx4096m", $MemoryString}| Set-Content $IniFileName
+        $IniFileContent = Get-Content $BakFileName | ForEach-Object {$_ -replace "-Xmx4096m", $MemoryString}
+
+	$javapathtext = "-vm`nC:\Program Files\Java\jdk-11.0.5\bin`n-vmargs"
+
+	$IniFileContent = $IniFileContent -replace "-vmargs",$javapathtext
+
+
+	Set-Content -Path $IniFileName -Value $IniFileContent
         Add-Content -Path $IniFileName -Value ("-Djava.io.tmpdir=" + $tmpdir)
 
         # Проверим существование временной папки для Java.
