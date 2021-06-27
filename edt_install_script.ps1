@@ -10,17 +10,17 @@ If (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
         "---------------------------------------------------"
    } else
    {
-	.\1ce-installer-cli.cmd support failures clean
+	.\1ce-installer-cli.exe support failures clean
         "Определяем установленные версии EDT"
-        .\1ce-installer-cli.cmd query installed >".\uninstall.yml"
+        .\1ce-installer-cli.exe query installed >".\uninstall.yml"
         "Удаляем установленные версии EDT"
-        .\1ce-installer-cli.cmd uninstall --file ".\uninstall.yml"
+        .\1ce-installer-cli.exe uninstall --file ".\uninstall.yml"
          "Устанавливаем новую версию из дистрибутива"
-        .\1ce-installer-cli.cmd install all --overwrite --ignore-hardware-checks
+        .\1ce-installer-cli.exe install all --overwrite --ignore-hardware-checks
 
         #Определяем новую версию
 
-        .\1ce-installer-cli.cmd query installed >".\install.yml"
+        .\1ce-installer-cli.exe query installed >".\install.yml"
 
         (Get-Content ".\install.yml" -Raw) -match "version:\s*(?'ver'\S*)"
         $EdtVer = $Matches['ver']
@@ -50,7 +50,7 @@ If (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 	$javapath = $args[2]
 	If($memory -eq $null)
 	{
-		$memory="12g"
+		$memory="8g"
 	}	
 
 	If($tmpdir -eq $null)
@@ -60,11 +60,6 @@ If (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 	$MemoryString = "-Xmx"+$memory
         Rename-Item -Path $IniFileName -NewName $BakFileName
         $IniFileContent = Get-Content $BakFileName | ForEach-Object {$_ -replace "-Xmx4096m", $MemoryString}
-
-	$javapathtext = "-vm`nC:\Program Files\Java\jdk-11.0.5\bin`n-vmargs"
-
-	$IniFileContent = $IniFileContent -replace "-vmargs",$javapathtext
-
 
 	Set-Content -Path $IniFileName -Value $IniFileContent
         Add-Content -Path $IniFileName -Value ("-Djava.io.tmpdir=" + $tmpdir)
