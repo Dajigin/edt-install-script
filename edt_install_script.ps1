@@ -59,7 +59,14 @@ If (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::
 	}	
 	$MemoryString = "-Xmx"+$memory
         Rename-Item -Path $IniFileName -NewName $BakFileName
-        $IniFileContent = Get-Content $BakFileName | ForEach-Object {$_ -replace "-Xmx4096m", $MemoryString}
+
+	If($javapath -eq $null)
+	{
+		$javapath ="C:\Program Files\BellSoft\LibericaJDK-11-Full"
+	}
+	$server_java_string =  "-vm`n" + $javapath + "\bin\server\jvm.dll`n" + "-vmargs"
+	
+        $IniFileContent = Get-Content $BakFileName | ForEach-Object {$_ -replace "-Xmx4096m", $MemoryString} | ForEach-Object {$_ -replace "-vmargs", $server_java_string}
 
 	Set-Content -Path $IniFileName -Value $IniFileContent
         Add-Content -Path $IniFileName -Value ("-Djava.io.tmpdir=" + $tmpdir)
